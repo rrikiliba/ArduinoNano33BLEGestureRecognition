@@ -29,7 +29,7 @@ def process_file(filepath, label):
         return []
 
     print(f"Processing {filepath}...")
-    # Explicitly read the label from the filename and handle backslashes for Windows paths
+    # Explicitly read the label from the filename
     filename = os.path.basename(filepath)
     df = pd.read_csv(filepath)
 
@@ -38,7 +38,7 @@ def process_file(filepath, label):
 
     features_list = []
 
-    # sliding window
+    # Sliding window
     for i in range(0, len(data) - WINDOW_SIZE + 1, STEP_SIZE):
         window = data[i:i + WINDOW_SIZE]
 
@@ -49,7 +49,7 @@ def process_file(filepath, label):
             axis_features = compute_features(axis_data)
             window_features.extend(axis_features)
 
-        # add correlation between X and Y axes, useful for detecting circles
+        # Add correlation between X and Y axes, useful for detecting circles
         corr_aXY = np.corrcoef(window[:, 0], window[:, 1])[0, 1]
         if np.isnan(corr_aXY): corr_aXY = 0.0
         corr_gXY = np.corrcoef(window[:, 3], window[:, 4])[0, 1]
@@ -66,6 +66,7 @@ def main():
 
     for filepath in glob.glob(f'{DATA_DIR}/*'):
         filename = os.path.basename(filepath)
+        # Extract label name from .csv file name so we can add more later
         label = filename.split('.')[0]
         extracted = process_file(filepath, label)
         all_features.extend(extracted)
