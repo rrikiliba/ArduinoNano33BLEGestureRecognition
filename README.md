@@ -23,13 +23,11 @@ This project is set up in a way that assumes you want to gather data on your own
 
 The class name assignment, as already mentioned, is fully automated, so you can add whatever class you want by just creating its training data.
 
-Then, you have two options for the actual training: first, you can use the Jupiter Notebook at this [link](https://drive.google.com/file/d/1X-pUrdSQqot0ESKmBRob8OxhTnZvcxDt/view?usp=drive_link). If you do, make sure to follow the instructions at the top of the page to upload the training CSV data for your classes.
+The actual model training is done entirely within this Jupiter notebook [file](training/training.ipynb), which explains the steps pretty well on its own.
 
-If you prefer, you can just use the two python scripts `extract_features.py` and `train_model.py` (in this order of course). If you decide to go this route, you need to be on a python version supported by tensorflow, create some kind of virtual environment, install the `requirements.txt` with pip and then run the scripts. Make sure to `cd` into the training [folder](training) before running them, so that file paths are correctly interpreted.
+The script will produce a `features.csv` file as intermediary step, and then directly export the model to a C++ header file `gesture_recognition.h`, which will be used in the next step. A `.tflite` file is also generated, but you can ignore it.
 
-Either method will produce a `features.csv` file as intermediary step, and then directly export the model to a C++ header file `gesture_recognition.h`, which will be used in the next step.
-
-If you use the Jupiter Notebook, you can download the header file and place it in the correct [folder](inference), otherwise it will be generated already there.
+Make sure to generally follow the instructions in the notebook and, once you obtain your `.h` file, place it in this [folder](inference).
 
 ## 3. Inference
 
