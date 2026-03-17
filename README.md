@@ -23,9 +23,12 @@ This project is set up in a way that assumes you want to gather data on your own
 
 The class name assignment, as already mentioned, is fully automated, so you can add whatever class you want by just creating its training data.
 
-The actual model training is done entirely within this Jupiter notebook [file](training/training.ipynb), which explains the steps pretty well on its own.
+The actual model training is done entirely within this Jupiter notebook [file](training/training.ipynb), which explains the steps pretty well on its own. If you don't know how to open it, you can either:
 
-The script will produce a `features.csv` file as intermediary step, and then directly export the model to a C++ header file `gesture_recognition.h`, which will be used in the next step. A `.tflite` file is also generated, but you can ignore it.
+- open it in VS Code using the official [extension](https://marketplace.visualstudio.com/items?itemName=ms-toolsai.jupyter)
+- open [Google Colab](https://colab.research.google.com/), go to File > Open notebook, select the GitHub tab and paste this repo's link
+
+Once executed all the cells, the script will produce a `features.csv` file as intermediary step, and then directly export the model to a C++ header file `gesture_recognition.h`, which will be used in the next step. A `.tflite` file is also generated, but you can ignore it.
 
 Make sure to generally follow the instructions in the notebook and, once you obtain your `.h` file, place it in this [folder](inference).
 
