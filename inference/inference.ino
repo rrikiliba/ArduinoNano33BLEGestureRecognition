@@ -16,14 +16,14 @@ float window_data[NUM_AXES][WINDOW_SIZE];
 int samplesRead = 0;
 
 const float accelerationThreshold = 2.0;
-const float PREDICTION_THRESHOLD = 0.70;s
+const float PREDICTION_THRESHOLD = 0.70;
 
 const tflite::Model* model = nullptr;
 tflite::MicroInterpreter* interpreter = nullptr;
 TfLiteTensor* input = nullptr;
 TfLiteTensor* output = nullptr;
 
-constexpr int kTensorArenaSize = 8 * 1024;
+constexpr int kTensorArenaSize = 16 * 1024;
 alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
 double vReal[FFT_SAMPLES];
@@ -63,7 +63,23 @@ void setup() {
 
   input = interpreter->input(0);
   output = interpreter->output(0);
+
+  Serial.println("Model Info");
   
+  // Check expected input features
+  Serial.print("Input Size is ");
+  Serial.println(input->dims->data[input->dims->size - 1]);
+
+  Serial.print("Input dtype is ");
+  if (input->type == kTfLiteFloat32) {
+    Serial.println("f32");
+  } else if (input->type == kTfLiteInt8) {
+    Serial.println("int8");
+  } else {
+    Serial.print("with id: ");
+    Serial.println(input->type);
+  }
+    
   Serial.println("System Ready. Collecting sliding windows...");
 }
 
@@ -95,8 +111,8 @@ void extract_features_and_predict() {
     for (int i = 0; i < WINDOW_SIZE; i++) {
       variance_sum += pow(window_data[axis][i] - mean, 2);
     }
-    float std_dev = sqrt(variance_sum / WINDOW_SIZE);
-    float rms = sqrt(sq_sum / WINDOW_SIZE);
+  float std_dev = sqrt(fmax(0.0, variance_sum / WINDOW_SIZE));
+  float rms = sqrt(fmax(0.0, sq_sum / WINDOW_SIZE));
 
     // save for correlation math
     axis_means[axis] = mean;
@@ -166,6 +182,10 @@ void extract_features_and_predict() {
   int best_match_index = -1;
 
   for (int i = 0; i < NUM_CLASSES; i++) {
+    // for debug: print all classes and associated confidence
+    // Serial.print(GESTURE_LABELS[i]);
+    // Serial.print(" with confidence: ");
+    // Serial.println(output->data.f[i]);
     if (output->data.f[i] > max_prob) {
       max_prob = output->data.f[i];
       best_match_index = i;
@@ -173,13 +193,10 @@ void extract_features_and_predict() {
   }
 
   if (best_match_index != -1 && max_prob >= PREDICTION_THRESHOLD) {
-    Serial.print("GESTURE DETECTED: "); 
     Serial.print(GESTURE_LABELS[best_match_index]);
-    Serial.print(" (Confidence: "); 
+    Serial.print(" ("); 
     Serial.print(max_prob * 100, 0); 
     Serial.println("%)");
-  } else {
-    Serial.println("Unknown Gesture");
   }
 }
 
@@ -209,6 +226,8 @@ void loop() {
         }
       }
 
+      // Only perform inference if device is moving,
+      // this is effectively better than an 'idle' class
       if (isMoving) {
         extract_features_and_predict();
       }
